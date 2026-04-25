@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 class Perceptron:
     def __init__(self, w = np.random.rand(3), b = np.random.rand(1), alpha = 0.1):
@@ -62,7 +63,6 @@ class Perceptron:
                 # 2.5.c - Mettre à jour le biais
                 self.b = self.b + self.alpha*(valeur[3] - y_p)
             error = self.calculerErreur(D)
-        self.afficherPlan()
         print("Plus d'erreur entrainement terminé")
         self.afficher_weight_biais()
         return self.w, self.b 
@@ -106,11 +106,11 @@ class Perceptron:
             return
         print("Le point x : ", x1 , " y : ",  x2 , " z : ", x3, " est vert")
 
-w = [1.5734874120795364, 1.5983053303527583, 0.005364907396568863]
-b = [-0.79971714]
-mod = Perceptron(w, b)
 D = np.loadtxt("donnees2.csv",delimiter=",")
-# weight, biais = mod.train_on_all_data(D = D)
+
+# Entrainement : 
+mod = Perceptron()
+weight, biais = mod.train_on_all_data(D = D)
 # weight, biais = mod.train(D = D, nb_iter = 1000)
 
 # Avec le train simple : 
@@ -120,5 +120,9 @@ D = np.loadtxt("donnees2.csv",delimiter=",")
 # Avec le train sur tout le dataset :
     # Pour le jeux de donnée 2 résultat trouvé w1 :  1.5734874120795364 w2 :  1.5983053303527583 w3 :  0.005364907396568863  biais :  [-0.79971714]
 
-# Test pour un point vert : 
-mod.utiliserNeurone(0.28233,0.21688,0.81577)
+# Utilisation : 
+# w = [1.5734874120795364, 1.5983053303527583, 0.005364907396568863]
+# b = [-0.79971714]
+# mod = Perceptron(w, b)
+# Test pour un point vert dans le jeu de donnée 2 : 
+# mod.utiliserNeurone(0.28233,0.21688,0.81577)
