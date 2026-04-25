@@ -9,13 +9,13 @@ class Perceptron:
         self.ax = plt.figure().add_subplot(111, projection='3d')
     
     def process_single_point(self, x1, x2, x3):
-        s = x1*self.w[0] + x2*self.w[1] + x3*self.w[2] + self.b
+        s = x1*self.w[0] + x2*self.w[1] + x3*self.w[2] + self.b[0]
         sortie = 0
         if s > 0:
             sortie = 1
         return sortie
     
-    def train(self, D, nb_iter): # 2.1 - Identifier l'entrée principale de l'entrainement
+    def train(self, D, nb_iter):
         for i in range(nb_iter): 
             # 2.3.a - Charger aléatoirement une ligne du dictionnaire
             valeur_aleatoire = D[np.random.randint(len(D))]
@@ -32,7 +32,7 @@ class Perceptron:
             # 2.5.c - Mettre à jour le biais
             self.b = self.b + self.alpha*(valeur_aleatoire[3] - y_p)
             
-            if(i%100 == 0): # 2.7.d - A quoi correspond ce 100 ? (n'hésitez pas à le changer)
+            if(i%100 == 0):
                 self.afficherPlan(self.w ,self.b)
                 error = self.calculerErreur(D)
                 if error == 0: 
@@ -43,6 +43,32 @@ class Perceptron:
                     self.alpha = 0.001
                 elif error < 4 and self.alpha != 0.0001:
                     print("Réduction de alpha : ", 0.0001)
+
+    def train_on_all_data(self, D):
+        error = 1
+        while error > 0:
+            for i in range (len(D)):
+                valeur = D[i]
+                # 2.3.b - Construire le vecteur d'entrées X et la sortie désirée y_d à partir de la ligne choisie
+                x1 = valeur[0]
+                x2 = valeur[1]
+                x3 = valeur[2]
+                # 2.4 - Calculer la sortie prédite y
+                y_p = self.process_single_point(x1, x2, x3)
+                # 2.5.b - Mettre à jour les poids
+                self.w[0] = self.w[0] + self.alpha*(valeur[3] - y_p) * valeur[0]
+                self.w[1] = self.w[1] + self.alpha*(valeur[3] - y_p) * valeur[1]
+                self.w[2] = self.w[2] + self.alpha*(valeur[3] - y_p) * valeur[2]
+                # 2.5.c - Mettre à jour le biais
+                self.b = self.b + self.alpha*(valeur[3] - y_p)
+            error = self.calculerErreur(D)
+        self.afficherPlan()
+        print("Plus d'erreur entrainement terminé")
+        self.afficher_weight_biais()
+        return self.w, self.b 
+
+    def afficher_weight_biais(self):
+        print("w1 : ", self.w[0], "w2 : ", self.w[1], "w3 : ", self.w[2], " biais : ", self.b)
 
     # Parcous tout le tableau est compte le nombre de réponse fausse
     def calculerErreur(self, D):
@@ -55,7 +81,7 @@ class Perceptron:
         print("Erreur absolue :", erreurs)
         return erreurs
     
-    def afficherPlan(self, W,b):
+    def afficherPlan(self):
         self.ax.clear()
         self.ax.set_xlim(-1, 1)
         self.ax.set_ylim(-1, 1)            
@@ -65,7 +91,7 @@ class Perceptron:
         self.ax.scatter(row_x,row_y,row_z,c = colors)
         mesh_range = np.arange(-1.2,1.2,0.1)
         mesh_x,mesh_y = np.meshgrid(mesh_range,mesh_range)
-        z = -1 / W[2] * (W[0]*mesh_x + W[1]*mesh_y + b) # 2.7.b - Que fait cette ligne ?
+        z = -1 / self.w[2] * (self.w[0]*mesh_x + self.w[1]*mesh_y + self.b[0]) # Affiche le plan représentant l'état de notre perceptron
         self.ax.plot_surface(mesh_x,mesh_y,z,alpha=0.4)
         plt.pause(0.5)
 
@@ -80,9 +106,19 @@ class Perceptron:
             return
         print("Le point x : ", x1 , " y : ",  x2 , " z : ", x3, " est vert")
 
-mod = Perceptron()
-D = np.loadtxt("donnees.csv",delimiter=",")
-weight, biais = mod.train(D = D, nb_iter = 100000)
-print(weight, biais)
-# Pour le jeux de donnée 2 résultat trouvé : weight [ 0.67192672  0.68456866 -0.00353624] biais [-0.33694855]
-# Pour le jeu de donnée 1 résultat trouvé : weight [ 0.45314944 -0.24473053 -0.39786813] biais [-0.04536178]
+w = [1.5734874120795364, 1.5983053303527583, 0.005364907396568863]
+b = [-0.79971714]
+mod = Perceptron(w, b)
+D = np.loadtxt("donnees2.csv",delimiter=",")
+# weight, biais = mod.train_on_all_data(D = D)
+# weight, biais = mod.train(D = D, nb_iter = 1000)
+
+# Avec le train simple : 
+    # Pour le jeux de donnée 2 résultat trouvé : weight [ 0.67192672  0.68456866 -0.00353624] biais [-0.33694855]
+    # Pour le jeu de donnée 1 résultat trouvé : weight [ 0.45314944 -0.24473053 -0.39786813] biais [-0.04536178]
+
+# Avec le train sur tout le dataset :
+    # Pour le jeux de donnée 2 résultat trouvé w1 :  1.5734874120795364 w2 :  1.5983053303527583 w3 :  0.005364907396568863  biais :  [-0.79971714]
+
+# Test pour un point vert : 
+mod.utiliserNeurone(0.28233,0.21688,0.81577)

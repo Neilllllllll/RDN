@@ -1,2 +1,2 @@
-
 ![Pipeline de traitement du perceptron](./assets/pipeline_de_traitement_perceptron.png "Pipeline de traitement du perceptron").
+![Pipeline d'entrainement du perceptron](./assets/pipeline_d_entrainement_perceptron.png "Pipeline d'entrainement du perceptron").
