@@ -20,60 +20,54 @@ def afficherPlan(W):
     ax.plot_surface(mesh_x,mesh_y,z,alpha=0.4)
     plt.pause(0.5)
 
-# def calculErreur(D, W): 
-#     erreurs = 0
-#     for i in range(len(D)):
-#         X = np.append(D[i,:3], 1).reshape(1, -1) # X = (x,y,z,1)
-#         y_d = D[i,-1]
-#         y = neurone(X,W)
-#         if y != y_d: # 1.3 - Cette ligne n'est plus correcte !
-#             erreurs += 1
-#     print("Erreur absolue :", erreurs)
-#     return erreurs
-
+def calculErreur(D, W): 
+    erreurs = 0
+    for i in range(len(D)):
+        X = np.append(D[i,:3], 1).reshape(1, -1) # X = (x,y,z,1)
+        y_d = D[i,-1]
+        y = neurone(X,W)
+        if np.absolute(y - y_d) > 0.10:
+            erreurs += 1
+    print("Erreur absolue :", erreurs)
+    return erreurs
 
 def neurone(X, W):
-    # Somme
-    for i in len(W):
-        s += W[i]*X[i]
-    # Function sigmoide
-    y = 1 / (1 + np.exp(s))
-    return y
+    s = np.dot(X, W)
+    return 1 / (1 + np.exp(-s))
 
 
 def entrainement(D, nb_iter=1000, eta=0.1, batch_size=10):
 
-    W = np.random.rand(4)  
+    W = np.random.rand(4)
     N = D.shape[0]
 
     for t in range(nb_iter):
         indices = np.random.randint(0, N, size=batch_size)
         batch = D[indices]
         grad_total = np.zeros_like(W)
-
         for ligne in batch:
-            X = np.append(ligne[:3], 1).reshape(1, -1) # X = (x,y,z,1)
+            X = np.append(ligne[:3], 1) # X = (x,y,z,1)
             y_d = ligne[-1]
             y = neurone(X, W)
-
             grad_i = np.zeros_like(W)
-            for i in len(grad_i):
-                grad_i[i]= ((y - y_d) * y(1-y) * X[i])
-                grad_total[i] += grad_i[i]
-
-            grad_moyen = ?? # 1.2.c
-            W = ?? # 1.2.d
+            grad_i = ((y - y_d) * y * (1-y) * X)
+            grad_total += grad_i
+        grad_moyen = ( 1/batch_size ) * grad_total
+        W = W - eta * grad_moyen
 
         if t % 100 == 0:
             afficherPlan(W)
-            calcul(D,W)
+            calculErreur(D,W)
 
     return W
 
-# def utiliserNeurone(X, W):
-#     X_aug = np.append(X, 1)
-#     y = neurone(X_aug, W)
-#     # ?? # 1.4 - Affiche la couleur prédite du point
+def utiliserNeurone(X, W):
+    X_aug = np.append(X, 1)
+    y = neurone(X_aug, W)
+    if (y > 0.5):
+        print("Rouge")
+    else:
+        print("Vert")
 
 
 # --- Programme principal ---
@@ -83,5 +77,5 @@ ax = fig.add_subplot(111, projection='3d')
 
 afficherPoints(D)
 
-W = entrainement(D, nb_iter=1000, eta=0.1, batch_size=10)
+W = entrainement(D, nb_iter=100000, eta=0.1, batch_size=10)
 
